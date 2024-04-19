@@ -15,6 +15,7 @@ from scipy.interpolate import griddata
 
 import API_Jakob
 
+
 bruh = API_Jakob.ImpactDrums()
 sound = bruh.generate_sound().squeeze().numpy()
 
@@ -42,7 +43,7 @@ def play_closest_sound(event):
         new_sound = bruh.generate_sound().squeeze().numpy()
         sf.write('temp_sound' + '.wav', new_sound, 44100)
         # print(bruh.new_z)
-        file_path = os.path.join(r'C:\Users\jakob\Desktop\ImpactDrumsAPI', 'temp_sound.wav')
+        file_path = os.path.join('temp_sound.wav')
         y_audio, sr_audio = librosa.load(file_path, sr=None)
 
         spectral_rolloff = librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean()
@@ -83,7 +84,7 @@ for x, y in zip(grid_x, grid_y):
     bruh.new_z[0][1] = y
     new_sound = bruh.generate_sound().squeeze().numpy()
     sf.write('temp_sound' + '.wav', new_sound, 44100)
-    file_path = os.path.join(r'C:\Users\jakob\Desktop\ImpactDrumsAPI', 'temp_sound.wav')
+    file_path = os.path.join('temp_sound.wav')
     y_audio, sr_audio = librosa.load(file_path, sr=None)
     spectral_rolloff = librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean()
     spectral_contrast = librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean()
