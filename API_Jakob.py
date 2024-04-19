@@ -28,7 +28,7 @@ def fading(audio: torch.Tensor):
 
 class ImpactDrums:
     def __init__(self,
-                 net_g: nn.Module = r'C:\Users\jakob\Desktop\ImpactDrumsAPI\pretrained\kick_g'
+                 net_g: nn.Module = r'pretrained\kick_g'
                     ):
     #             net_z: nn.Module = 'pretrained/kick_z'):
 
