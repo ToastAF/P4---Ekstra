@@ -62,13 +62,31 @@ def update_plot(feature):
         y_audio, sr_audio = librosa.load(file_path, sr=None)
 
         if feature == 'Spectral Rolloff':
-            feature_value = librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean()
+            value = librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean()
         elif feature == 'Spectral Contrast':
-            feature_value = librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean()
+            value = librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean()
+        elif feature == 'Spectral Centroid':
+            value = librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean()
+        elif feature == 'Zero Crossing Rate':
+            value = librosa.feature.zero_crossing_rate(y_audio).mean()
+        elif feature == 'MFCC':
+            mfccs = librosa.feature.mfcc(y=y_audio, sr=sr_audio)
+            value = np.mean(mfccs[0:5])  # Averaging first 5 MFCCs
+        elif feature == 'Spectral Bandwidth':
+            value = librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean()
+        elif feature == 'Spectral Flatness':
+            value = librosa.feature.spectral_flatness(y=y_audio).mean()
+        elif feature == 'Temporal Centroid':
+            envelope = librosa.onset.onset_strength(y=y_audio, sr=sr_audio)
+            frames = np.arange(len(envelope))
+            temporal_centroid = np.sum(frames * envelope) / np.sum(envelope)
+            value = temporal_centroid / len(envelope)
+        elif feature == 'RMS Energy':
+            value = librosa.feature.rms(y=y_audio).mean()
+        feature_values.append(value)
 
-        feature_values.append(feature_value)
-
-    normalized_values = (np.array(feature_values) - np.min(feature_values)) / (np.max(feature_values) - np.min(feature_values))
+    normalized_values = (np.array(feature_values) - np.min(feature_values)) / (
+                np.max(feature_values) - np.min(feature_values))
     zi = griddata((np.array(grid_x), np.array(grid_y)), normalized_values, (xi, yi), method='cubic')
     ax.clear()
     ax.scatter(xi, yi, c=zi, cmap='viridis', alpha=0.5)
@@ -103,9 +121,13 @@ right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
 coords_label = tk.Label(right_frame, text="", justify='center')
 coords_label.pack()
 
-feature_selector = ttk.Combobox(right_frame, values=['Spectral Rolloff', 'Spectral Contrast'])
+# Update feature list in your GUI
+feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate',
+                'MFCC', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy']
+feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
+
 
 fig.canvas.mpl_connect('button_press_event', play_closest_sound)
 update_plot('Spectral Rolloff')
