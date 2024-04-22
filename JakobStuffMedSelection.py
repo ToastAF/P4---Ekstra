@@ -50,27 +50,24 @@ def update_plot(feature):
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
 
-        # Calculate features outside the if condition to ensure they are available
-        spectral_centroid = librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean()
-        rms_energy = librosa.feature.rms(y=y_audio).mean()
         envelope = librosa.onset.onset_strength(y=y_audio, sr=sr_audio)
         temporal_centroid = np.sum(np.arange(len(envelope)) * envelope) / np.sum(envelope)
 
         if feature == 'MyFeature':
-            all_features.append([spectral_centroid, rms_energy, temporal_centroid])
+            # MyFeature is a combination of Spectral Centroid, RMS Energy and Temporal Centroid
+            all_features.append([librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(), librosa.feature.rms(y=y_audio).mean(), temporal_centroid])
             feature_values = pca.fit_transform(all_features).flatten()
         else:
             # Using computed values directly
             value = {
                 'Spectral Rolloff': librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean(),
                 'Spectral Contrast': librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean(),
-                'Spectral Centroid': spectral_centroid,
+                'Spectral Centroid': librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(),
                 'Zero Crossing Rate': librosa.feature.zero_crossing_rate(y_audio).mean(),
-                'MFCC': np.mean(librosa.feature.mfcc(y=y_audio, sr=sr_audio)[0:5]),
                 'Spectral Bandwidth': librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(),
                 'Spectral Flatness': librosa.feature.spectral_flatness(y=y_audio).mean(),
                 'Temporal Centroid': temporal_centroid,
-                'RMS Energy': rms_energy
+                'RMS Energy': librosa.feature.rms(y=y_audio).mean()
             }.get(feature)
             feature_values.append(value)
 
@@ -109,12 +106,12 @@ right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
 coords_label = tk.Label(right_frame, text="", justify='center')
 coords_label.pack()
 
-feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate',
-                'MFCC', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'MyFeature']
+feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'MyFeature']
 feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
 
 fig.canvas.mpl_connect('button_press_event', play_closest_sound)
 update_plot('Spectral Rolloff')  # Start with a default feature
+feature_selector.current(0)
 window.mainloop()
