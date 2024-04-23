@@ -43,7 +43,7 @@ class ImpactDrums:
     #    self.net_z = net_z
 
     val_1 = 0
-    val_2 = 2
+    val_2 = 1
 
     vector = [[[2.3638],
               [0.9938],
