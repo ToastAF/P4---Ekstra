@@ -43,7 +43,9 @@ def play_closest_sound(event):
 # Function to update the gradient based on selected feature
 def update_plot(feature):
     MyFeatureList = []  # Store feature data for MyFeature
-    JakobFeatureList = []  # Store feature data for Jakob
+    DistortionFeatureList = []  # Store feature data for Jakob
+    BruhFeatureList = []  # Store feature data for Bruh
+    SpectralFeatureList = []  # Store feature data for Spectral stuff
     feature_values = []
     for x, y in zip(grid_x, grid_y):
         bruh.new_z[0][0], bruh.new_z[0][1] = x, y
@@ -58,9 +60,17 @@ def update_plot(feature):
             # MyFeature is a combination of Spectral Centroid, RMS Energy and Temporal Centroid
             MyFeatureList.append([librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(), librosa.feature.rms(y=y_audio).mean(), temporal_centroid])
             feature_values = pca.fit_transform(MyFeatureList).flatten()
-        elif feature == 'Jakob':
-            JakobFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_flatness(y=y_audio).mean()])
-            feature_values = pca.fit_transform(JakobFeatureList).flatten()
+        elif feature == 'Distortion':
+            DistortionFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_flatness(y=y_audio).mean()])
+            feature_values = pca.fit_transform(DistortionFeatureList).flatten()
+        elif feature == 'Bruh':
+            # Bruh is a combination of Spectral Bandwidth, Zero Crossing Rate and Spectral Rolloff
+            BruhFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.rms(y=y_audio).mean()])
+            feature_values = pca.fit_transform(BruhFeatureList).flatten()
+        elif feature == 'Spectral':
+            # Bruh is a combination of Spectral Bandwidth, Zero Crossing Rate and Spectral Rolloff
+            BruhFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.spectral_contrast(y=y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.spectral_centroid(), temporal_centroid])
+            feature_values = pca.fit_transform(BruhFeatureList).flatten()
         else:
             # Using computed values directly
             value = {
@@ -109,7 +119,7 @@ right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
 coords_label = tk.Label(right_frame, text="", justify='center')
 coords_label.pack()
 
-feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'MyFeature', 'Jakob']
+feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'MyFeature', 'Distortion', 'Bruh', 'Spectral']
 feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
