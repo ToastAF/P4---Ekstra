@@ -42,6 +42,9 @@ class ImpactDrums:
         self.net_g = net_g
     #    self.net_z = net_z
 
+    val_1 = 0
+    val_2 = 2
+
     vector = [[[2.3638],
               [0.9938],
               [0.2829],
@@ -65,8 +68,8 @@ class ImpactDrums:
 
     new_z = torch.tensor(vector).float()
 
-    x = new_z[0][0] #These yoink the numbers from the new_z vector
-    y = new_z[0][1]
+    x = new_z[0][val_1] #These yoink the numbers from the new_z vector
+    y = new_z[0][val_2]
     #print(x[0])
     #print(y[0])
 
