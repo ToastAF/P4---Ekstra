@@ -32,7 +32,7 @@ def play_closest_sound(event):
         if isinstance(y, np.ndarray):
             y = y[0]
         x, y = float(x), float(y)
-        bruh.new_z[0][0], bruh.new_z[0][1] = x, y
+        bruh.new_z[0][bruh.val_1], bruh.new_z[0][bruh.val_2] = x, y
         new_sound = bruh.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
@@ -45,7 +45,7 @@ def update_plot(feature):
     DistortionFeatureList = []  # Store feature data for Jakob
     feature_values = []
     for x, y in zip(grid_x, grid_y):
-        bruh.new_z[0][0], bruh.new_z[0][1] = x, y
+        bruh.new_z[0][bruh.val_1], bruh.new_z[0][bruh.val_2] = x, y
         new_sound = bruh.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
