@@ -40,6 +40,7 @@ def play_closest_sound(event):
         sd.wait()
         coords_label.config(text=f"Clicked coordinates: {x:.2f}, {y:.2f}")
 
+
 # Function to update the gradient based on selected feature
 def update_plot(feature):
     MyFeatureList = []  # Store feature data for MyFeature

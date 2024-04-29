@@ -12,19 +12,19 @@ import soundfile as sf
 from scipy.interpolate import griddata
 import API_Jakob
 
-# Create an instance of ImpactDrums
-bruh = API_Jakob.ImpactDrums()
+# Create an instance of ImpactDrums, which is the API, that generates sounds
+generator = API_Jakob.ImpactDrums()
 
 # Initial sound generation
-sound = bruh.generate_sound().squeeze().numpy()
+sound = generator.generate_sound().squeeze().numpy()
 sf.write('Lyd 1.wav', sound, 44100)
 
 # Variables
 plot_size = 5
 pca = PCA(n_components=1)  # PCA to reduce to one principal component
 
-# Function to play closest sound
-def play_closest_sound(event):
+# Function to play the sound associated with the point clicked
+def play_sound(event):
     x, y = event.xdata, event.ydata
     if x is not None and y is not None:
         if isinstance(x, np.ndarray):
@@ -32,8 +32,8 @@ def play_closest_sound(event):
         if isinstance(y, np.ndarray):
             y = y[0]
         x, y = float(x), float(y)
-        bruh.new_z[0][0], bruh.new_z[0][1] = x, y
-        new_sound = bruh.generate_sound().squeeze().numpy()
+        generator.new_z[0][0], generator.new_z[0][1] = x, y
+        new_sound = generator.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
         sd.play(y_audio, sr_audio)
@@ -44,12 +44,12 @@ def play_closest_sound(event):
 def update_plot(feature):
     MyFeatureList = []  # Store feature data for MyFeature
     DistortionFeatureList = []  # Store feature data for Jakob
-    BruhFeatureList = []  # Store feature data for Bruh
+    FeatureList = []  # Store feature data for Bruh
     SpectralFeatureList = []  # Store feature data for Spectral stuff
     feature_values = []
     for x, y in zip(grid_x, grid_y):
-        bruh.new_z[0][0], bruh.new_z[0][1] = x, y
-        new_sound = bruh.generate_sound().squeeze().numpy()
+        generator.new_z[0][0], generator.new_z[0][1] = x, y
+        new_sound = generator.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
 
@@ -65,12 +65,12 @@ def update_plot(feature):
             feature_values = pca.fit_transform(DistortionFeatureList).flatten()
         elif feature == 'Bruh':
             # Bruh is a combination of Spectral Bandwidth, Zero Crossing Rate and Spectral Rolloff
-            BruhFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.rms(y=y_audio).mean()])
-            feature_values = pca.fit_transform(BruhFeatureList).flatten()
+            FeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.rms(y=y_audio).mean()])
+            feature_values = pca.fit_transform(FeatureList).flatten()
         elif feature == 'Spectral':
             # Bruh is a combination of Spectral Bandwidth, Zero Crossing Rate and Spectral Rolloff
-            BruhFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.spectral_contrast(y=y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.spectral_centroid(), temporal_centroid])
-            feature_values = pca.fit_transform(BruhFeatureList).flatten()
+            FeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.spectral_contrast(y=y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.spectral_centroid(), temporal_centroid])
+            feature_values = pca.fit_transform(FeatureList).flatten()
         else:
             # Using computed values directly
             value = {
@@ -93,10 +93,10 @@ def update_plot(feature):
     canvas.draw()
 
 # Initialize plot and GUI
-point = [float(bruh.x[0]), float(bruh.y[0])]
+point = [float(generator.x[0]), float(generator.y[0])]
 fig, ax = plt.subplots(figsize=(5, 5))
-plt.xlim(bruh.x[0]-plot_size, bruh.x[0]+plot_size)
-plt.ylim(bruh.y[0]-plot_size, bruh.y[0]+plot_size)
+plt.xlim(generator.x[0] - plot_size, generator.x[0] + plot_size)
+plt.ylim(generator.y[0] - plot_size, generator.y[0] + plot_size)
 grid_x, grid_y = [], []
 offset = (plot_size*2)/10
 for i in range(11):
@@ -124,7 +124,7 @@ feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
 
-fig.canvas.mpl_connect('button_press_event', play_closest_sound)
+fig.canvas.mpl_connect('button_press_event', play_sound)
 update_plot('Spectral Rolloff')  # Start with a default feature
 feature_selector.current(0)
 window.mainloop()
