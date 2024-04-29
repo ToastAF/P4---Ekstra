@@ -20,7 +20,7 @@ sound = generator.generate_sound().squeeze().numpy()
 sf.write('Lyd 1.wav', sound, 44100)
 
 # Variables
-plot_size = 5
+plot_size = 6
 pca = PCA(n_components=1)  # PCA to reduce to one principal component
 
 # Function to play the sound associated with the point clicked
@@ -98,11 +98,12 @@ fig, ax = plt.subplots(figsize=(5, 5))
 plt.xlim(generator.x[0] - plot_size, generator.x[0] + plot_size)
 plt.ylim(generator.y[0] - plot_size, generator.y[0] + plot_size)
 grid_x, grid_y = [], []
-offset = (plot_size*2)/10
+offset = plot_size
+offset_increment = (plot_size*2)/10
 for i in range(11):
     for j in range(11):
-        grid_x.append((point[0] + i * offset) - 1)
-        grid_y.append((point[1] + j * offset) - 1)
+        grid_x.append((point[0] + i * offset_increment) - offset)
+        grid_y.append((point[1] + j * offset_increment) - offset)
 xi, yi = np.meshgrid(np.linspace(min(grid_x), max(grid_x), 100), np.linspace(min(grid_y), max(grid_y), 100))
 
 # GUI setup
