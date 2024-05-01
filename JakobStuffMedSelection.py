@@ -23,6 +23,8 @@ sf.write('Lyd 1.wav', sound, 44100)
 plot_size = 6
 pca = PCA(n_components=1)  # PCA to reduce to one principal component
 
+click_history = []
+
 # Function to play the sound associated with the point clicked
 def play_sound(event):
     x, y = event.xdata, event.ydata
@@ -32,6 +34,8 @@ def play_sound(event):
         if isinstance(y, np.ndarray):
             y = y[0]
         x, y = float(x), float(y)
+
+        click_history.append([x, y])
         generator.new_z[0][0], generator.new_z[0][1] = x, y
         new_sound = generator.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
@@ -129,3 +133,6 @@ fig.canvas.mpl_connect('button_press_event', play_sound)
 update_plot('Distortion')  # Start with a default feature
 feature_selector.current(0)
 window.mainloop()
+
+
+np.savetxt('click_history.txt', click_history, fmt='%.5f')
