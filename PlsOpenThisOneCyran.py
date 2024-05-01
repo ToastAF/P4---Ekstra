@@ -43,6 +43,7 @@ def play_closest_sound(event):
 # Function to update the gradient based on selected feature
 def update_plot(feature):
     DistortionFeatureList = []  # Store feature data for Jakob
+    JakobsMorFeatureList = []  # Store feature data for Jakobs mor
     feature_values = []
     for x, y in zip(grid_x, grid_y):
         bruh.new_z[0][bruh.val_1], bruh.new_z[0][bruh.val_2] = x, y
@@ -57,6 +58,12 @@ def update_plot(feature):
             # Distortion is a combination of Spectral Bandwidth, Zero Crossing Rate and Spectral Flatness
             DistortionFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_flatness(y=y_audio).mean()])
             feature_values = pca.fit_transform(DistortionFeatureList).flatten()
+        elif feature == 'Jakobs mor':
+            #Jakobs mor is a combination of Spectral Centroid, RMS Energy and Temporal Centroid
+            #JakobsMorFeatureList.append([librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean(), librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean()])
+            #JakobsMorFeatureList.append([librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(), librosa.feature.rms(y=y_audio).mean(), temporal_centroid])
+            JakobsMorFeatureList.append([librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean(), temporal_centroid, librosa.feature.rms(y=y_audio).mean()])
+            feature_values = pca.fit_transform(JakobsMorFeatureList).flatten()
         else:
             # Using computed values directly
             value = {
@@ -87,8 +94,8 @@ grid_x, grid_y = [], []
 offset = (plot_size*2)/10
 for i in range(11):
     for j in range(11):
-        grid_x.append((point[0] + i * offset) - 1)
-        grid_y.append((point[1] + j * offset) - 1)
+        grid_x.append((point[0] + i * offset) - plot_size)
+        grid_y.append((point[1] + j * offset) - plot_size)
 xi, yi = np.meshgrid(np.linspace(min(grid_x), max(grid_x), 100), np.linspace(min(grid_y), max(grid_y), 100))
 
 # GUI setup
@@ -105,7 +112,7 @@ right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
 coords_label = tk.Label(right_frame, text="", justify='center')
 coords_label.pack()
 
-feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'Distortion']
+feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'Distortion', 'Jakobs mor']
 feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
