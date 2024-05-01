@@ -126,6 +126,6 @@ feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
 
 fig.canvas.mpl_connect('button_press_event', play_sound)
-update_plot('Spectral Rolloff')  # Start with a default feature
+update_plot('Distortion')  # Start with a default feature
 feature_selector.current(0)
 window.mainloop()
