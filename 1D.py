@@ -7,84 +7,93 @@ import librosa
 import sounddevice as sd
 import soundfile as sf
 from sklearn.decomposition import PCA
-
-# Assuming API_Jakob is correctly configured and available
 import API_Jakob
 
-# Initialize the API for generating sounds
+# Create an instance of ImpactDrums
 bruh = API_Jakob.ImpactDrums()
+
+# Initial sound generation
+sound = bruh.generate_sound().squeeze().numpy()
+sf.write('Lyd 1.wav', sound, 44100)
 
 # Variables
 plot_size = 5
-pca = PCA(n_components=1)  # PCA for feature reduction
+pca = PCA(n_components=1)  # PCA to reduce dimensions to one principal component
 
+# Function to play closest sound
+def play_closest_sound(event):
+    x = event.xdata
+    if x is not None:
+        bruh.new_z[0][bruh.val_1] = x
+        new_sound = bruh.generate_sound().squeeze().numpy()
+        sf.write('temp_sound.wav', new_sound, 44100)
+        y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
+        sd.play(y_audio, sr_audio)
+        sd.wait()
+        coords_label.config(text=f"Clicked coordinates: {x:.2f}")
 
-# Function to play sound at a specific position
-def play_sound(x):
-    bruh.new_z[0][bruh.val_1] = x
-    new_sound = bruh.generate_sound().squeeze().numpy()
-    sf.write('temp_sound.wav', new_sound, 44100)
-    y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
-    sd.play(y_audio, sr_audio)
-    sd.wait()
-
-
-# Function to update the plot based on the selected feature
+# Function to update the gradient based on selected feature
 def update_plot(feature):
     x_line = np.linspace(-plot_size, plot_size, 100)
     feature_values = []
 
-    # Collect feature data for each point along the line
     for x in x_line:
         bruh.new_z[0][bruh.val_1] = x
         new_sound = bruh.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
+        feature_values.append(extract_features(y_audio, sr_audio, feature))
 
-        # Select the feature to analyze
-        feature_value = {
-            'Spectral Centroid': librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(),
-            'Spectral Rolloff': librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean(),
-            # Add other features as necessary
-        }.get(feature, 0)
-        feature_values.append(feature_value)
-
-    # Normalize the feature values
-    normalized_values = (np.array(feature_values) - np.min(feature_values)) / (
-                np.max(feature_values) - np.min(feature_values))
-
-    # Apply PCA for dimensionality reduction
-    pca_values = pca.fit_transform(np.array(feature_values).reshape(-1, 1)).flatten()
-    normalized_pca_values = (pca_values - np.min(pca_values)) / (np.max(pca_values) - np.min(pca_values))
-
-    # Clear and update the plot
+    normalized_values = normalize_features(feature_values)
     ax.clear()
-    ax.scatter(x_line, np.zeros_like(x_line), c=normalized_pca_values, cmap='viridis')
+    ax.scatter(x_line, np.zeros_like(x_line), c=normalized_values, cmap='viridis', s=100)
     canvas.draw()
 
+def normalize_features(features):
+    features = np.array(features)
+    return (features - np.min(features)) / (np.max(features) - np.min(features))
 
-# Set up the GUI
+def extract_features(y_audio, sr_audio, feature):
+    feature_dict = {
+        'Spectral Rolloff': librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean(),
+        'Spectral Contrast': librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean(),
+        'Spectral Centroid': librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(),
+        'Zero Crossing Rate': librosa.feature.zero_crossing_rate(y_audio).mean(),
+        'Spectral Bandwidth': librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(),
+        'Spectral Flatness': librosa.feature.spectral_flatness(y=y_audio).mean(),
+        'Temporal Centroid': np.sum(np.arange(len(librosa.onset.onset_strength(y=y_audio, sr=sr_audio))) * librosa.onset.onset_strength(y=y_audio, sr=sr_audio)) / np.sum(librosa.onset.onset_strength(y=y_audio, sr=sr_audio)),
+        'RMS Energy': librosa.feature.rms(y=y_audio).mean(),
+        'Distortion': np.log1p(librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean() + librosa.feature.zero_crossing_rate(y_audio).mean() + librosa.feature.spectral_flatness(y=y_audio).mean()),
+        'Jakobs mor': librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean() + np.sum(np.arange(len(librosa.onset.onset_strength(y=y_audio, sr=sr_audio))) * librosa.onset.onset_strength(y=y_audio, sr=sr_audio)) / np.sum(librosa.onset.onset_strength(y=y_audio, sr=sr_audio)) + librosa.feature.rms(y=y_audio).mean()
+    }
+    return feature_dict.get(feature, 0)
+
+# Initialize plot and GUI components
+fig, ax = plt.subplots(figsize=(10, 2))
+ax.set_xlim(-plot_size, plot_size)
+ax.set_ylim(0, 1)  # Fixed Y-axis to make it look more like a 1D line
+
+# GUI setup
 window = tk.Tk()
-window.title("Sound Feature Visualization")
-
+window.title("Generate new sound")
 plot_frame = tk.Frame(window)
 plot_frame.pack(side=tk.LEFT, padx=10, pady=10)
-
-fig, ax = plt.subplots(figsize=(10, 2))
 canvas = FigureCanvasTkAgg(fig, master=plot_frame)
 canvas.draw()
 canvas.get_tk_widget().pack()
-
 right_frame = tk.Frame(window)
 right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
 
-feature_selector = ttk.Combobox(right_frame, values=['Spectral Centroid', 'Spectral Rolloff'])
+coords_label = tk.Label(right_frame, text="", justify='center')
+coords_label.pack()
+
+feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'Distortion', 'Jakobs mor']
+feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
 
-fig.canvas.mpl_connect('button_press_event', lambda event: play_sound(event.xdata))
-
-update_plot('Spectral Centroid')  # Start with a default feature
+fig.canvas.mpl_connect('button_press_event', play_closest_sound)
+update_plot('Spectral Rolloff')  # Start with a default feature
 feature_selector.current(0)
 
 window.mainloop()
