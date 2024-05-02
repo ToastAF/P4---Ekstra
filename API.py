@@ -45,6 +45,7 @@ class ImpactDrums:
     val_1 = 0
     val_2 = 1
 
+    #The vector that is used for sampling the latent space
     vector = [[[2.3638],
               [0.9938],
               [0.2829],

@@ -9,7 +9,7 @@ import soundfile as sf
 from sklearn.decomposition import PCA
 
 # Assuming API_Jakob is correctly configured and available
-import API_Jakob
+import API
 
 # Initialize the API for generating sounds
 bruh = API_Jakob.ImpactDrums()

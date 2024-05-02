@@ -4,9 +4,9 @@ import librosa.feature
 import soundfile as sf
 from sklearn.decomposition import PCA
 
-import API_Jakob
+import API
 
-bruh = API_Jakob.ImpactDrums()
+bruh = API.ImpactDrums()
 
 x_line = np.linspace(-5, 5, 100)
 feature_values1 = []

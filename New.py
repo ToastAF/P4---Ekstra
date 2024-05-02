@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import soundfile as sf
 from scipy.interpolate import griddata
 
-import API_Jakob
+import API
 
 
 bruh = API_Jakob.ImpactDrums()

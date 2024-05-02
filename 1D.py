@@ -9,10 +9,10 @@ import soundfile as sf
 from sklearn.decomposition import PCA
 
 # Import your custom API for sound generation
-import API_Jakob
+import API
 
 # Initialize the API for generating sounds
-generator = API_Jakob.ImpactDrums()
+generator = API.ImpactDrums()
 
 # Variables for plot size and PCA configuration
 plot_size = 5

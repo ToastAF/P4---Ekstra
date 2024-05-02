@@ -10,10 +10,10 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import soundfile as sf
 from scipy.interpolate import griddata
-import API_Jakob
+import API
 
 # Create an instance of ImpactDrums
-bruh = API_Jakob.ImpactDrums()
+bruh = API.ImpactDrums()
 
 # Initial sound generation
 sound = bruh.generate_sound().squeeze().numpy()

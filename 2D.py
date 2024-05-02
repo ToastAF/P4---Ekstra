@@ -10,10 +10,10 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import soundfile as sf
 from scipy.interpolate import griddata
-import API_Jakob
+import API
 
 # Create an instance of ImpactDrums, which is the API, that generates sounds
-generator = API_Jakob.ImpactDrums()
+generator = API.ImpactDrums()
 
 # Initial sound generation
 sound = generator.generate_sound().squeeze().numpy()
@@ -64,27 +64,10 @@ def update_plot(feature):
             DistortionFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_flatness(y=y_audio).mean()])
             feature_values = pca.fit_transform(DistortionFeatureList).flatten()
         elif feature == 'Sorting 2':
-            # Bruh is a combination of Spectral Bandwidth, Zero Crossing Rate and Spectral Rolloff
-            FeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.rms(y=y_audio).mean()])
-            feature_values = pca.fit_transform(FeatureList).flatten()
-        elif feature == 'Spectral':
-            # Bruh is a combination of Spectral Bandwidth, Zero Crossing Rate and Spectral Rolloff
-            FeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.spectral_contrast(y=y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.spectral_centroid(), temporal_centroid])
+            FeatureList.append([librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean(), temporal_centroid, librosa.feature.rms(y=y_audio).mean()])
             feature_values = pca.fit_transform(FeatureList).flatten()
         else:
-            # Using computed values directly
-            value = {
-                'Spectral Rolloff': librosa.feature.spectral_rolloff(y=y_audio, sr=sr_audio).mean(),
-                'Spectral Contrast': librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean(),
-                'Spectral Centroid': librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(),
-                'Zero Crossing Rate': librosa.feature.zero_crossing_rate(y_audio).mean(),
-                'Spectral Bandwidth': librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(),
-                'Spectral Flatness': librosa.feature.spectral_flatness(y=y_audio).mean(),
-                'Temporal Centroid': temporal_centroid,
-                'RMS Energy': librosa.feature.rms(y=y_audio).mean()
-            }.get(feature)
-            feature_values.append(value)
-
+            feature_values = [0]
 
     normalized_values = (np.array(feature_values) - np.min(feature_values)) / (np.max(feature_values) - np.min(feature_values))
     zi = griddata((np.array(grid_x), np.array(grid_y)), normalized_values, (xi, yi), method='cubic')
