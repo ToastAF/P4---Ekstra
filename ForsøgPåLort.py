@@ -48,10 +48,7 @@ def update_plot(feature):
                         librosa.feature.zero_crossing_rate(y_audio).mean(),
                         librosa.feature.spectral_flatness(y=y_audio).mean()]
         elif feature == 'Sorting 2':
-            features = [librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(),
-                        librosa.feature.zero_crossing_rate(y_audio).mean(),
-                        librosa.feature.spectral_rolloff(y=y_audio).mean(),
-                        librosa.feature.rms(y=y_audio).mean()]
+            features = [librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean(), temporal_centroid, librosa.feature.rms(y=y_audio).mean()]
         else:
             features = [0]  # Default case for unhandled features
 
