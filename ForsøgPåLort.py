@@ -18,10 +18,13 @@ generator = API_Jakob.ImpactDrums()
 plot_size = 5
 pca = PCA(n_components=1)  # Using PCA to reduce the feature dimension to 1D
 
+click_history = []
+
 # Function to play sound at a specific position
 def play_sound(x):
     if x is not None:  # Check if x is valid (click inside the plot)
         generator.new_z[0][0] = x  # Assuming 'new_z' is the parameter array in your API
+        click_history.append(x)
         new_sound = generator.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
@@ -90,3 +93,5 @@ update_plot('Sorting 1')  # Initialize with a default feature for visualization
 feature_selector.current(0)
 
 window.mainloop()
+
+np.savetxt('1D_click_history.txt', click_history, fmt='%.5f')
