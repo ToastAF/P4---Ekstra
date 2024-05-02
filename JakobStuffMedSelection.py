@@ -134,5 +134,5 @@ update_plot('Distortion')  # Start with a default feature
 feature_selector.current(0)
 window.mainloop()
 
-
-np.savetxt('click_history.txt', click_history, fmt='%.5f')
+#Vi gemmer en fil med alle de ting som brugeren har klikket på
+np.savetxt('2D_click_history.txt', click_history, fmt='%.5f')
