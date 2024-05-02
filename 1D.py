@@ -71,8 +71,8 @@ def extract_features(y_audio, sr_audio, feature):
         'Spectral Flatness': librosa.feature.spectral_flatness(y=y_audio).mean(),
         'Temporal Centroid': np.sum(np.arange(len(librosa.onset.onset_strength(y=y_audio, sr=sr_audio))) * librosa.onset.onset_strength(y=y_audio, sr=sr_audio)) / np.sum(librosa.onset.onset_strength(y=y_audio, sr=sr_audio)),
         'RMS Energy': librosa.feature.rms(y=y_audio).mean(),
-        'Distortion': np.log1p(librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean() + librosa.feature.zero_crossing_rate(y_audio).mean() + librosa.feature.spectral_flatness(y=y_audio).mean()),
-        'Jakobs mor': librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean() + np.sum(np.arange(len(librosa.onset.onset_strength(y=y_audio, sr=sr_audio))) * librosa.onset.onset_strength(y=y_audio, sr=sr_audio)) / np.sum(librosa.onset.onset_strength(y=y_audio, sr=sr_audio)) + librosa.feature.rms(y=y_audio).mean()
+        'Sorting 1': np.log1p(librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean() + librosa.feature.zero_crossing_rate(y_audio).mean() + librosa.feature.spectral_flatness(y=y_audio).mean()),
+        'Sorting 2': librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean() + np.sum(np.arange(len(librosa.onset.onset_strength(y=y_audio, sr=sr_audio))) * librosa.onset.onset_strength(y=y_audio, sr=sr_audio)) / np.sum(librosa.onset.onset_strength(y=y_audio, sr=sr_audio)) + librosa.feature.rms(y=y_audio).mean()
     }
     return feature_dict.get(feature, 0)
 
@@ -96,13 +96,13 @@ right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
 coords_label = tk.Label(right_frame, text="", justify='center')
 coords_label.pack()
 
-feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'Distortion', 'Jakobs mor']
+feature_list = ['Sorting 1', 'Sorting 2']
 feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
 
 fig.canvas.mpl_connect('button_press_event', play_sound)
-update_plot('Spectral Rolloff')  # Start with a default feature
+update_plot('Sorting 1')  # Start with a default feature
 feature_selector.current(0)
 
 window.mainloop()

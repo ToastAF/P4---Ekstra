@@ -60,14 +60,10 @@ def update_plot(feature):
         envelope = librosa.onset.onset_strength(y=y_audio, sr=sr_audio)
         temporal_centroid = np.sum(np.arange(len(envelope)) * envelope) / np.sum(envelope)
 
-        if feature == 'MyFeature':
-            # MyFeature is a combination of Spectral Centroid, RMS Energy and Temporal Centroid
-            MyFeatureList.append([librosa.feature.spectral_centroid(y=y_audio, sr=sr_audio).mean(), librosa.feature.rms(y=y_audio).mean(), temporal_centroid])
-            feature_values = pca.fit_transform(MyFeatureList).flatten()
-        elif feature == 'Distortion':
+        if feature == 'Sorting 1':
             DistortionFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_flatness(y=y_audio).mean()])
             feature_values = pca.fit_transform(DistortionFeatureList).flatten()
-        elif feature == 'Bruh':
+        elif feature == 'Sorting 2':
             # Bruh is a combination of Spectral Bandwidth, Zero Crossing Rate and Spectral Rolloff
             FeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_rolloff(y=y_audio).mean(), librosa.feature.rms(y=y_audio).mean()])
             feature_values = pca.fit_transform(FeatureList).flatten()
@@ -124,13 +120,13 @@ right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
 coords_label = tk.Label(right_frame, text="", justify='center')
 coords_label.pack()
 
-feature_list = ['Spectral Rolloff', 'Spectral Contrast', 'Spectral Centroid', 'Zero Crossing Rate', 'Spectral Bandwidth', 'Spectral Flatness', 'Temporal Centroid', 'RMS Energy', 'MyFeature', 'Distortion', 'Bruh', 'Spectral']
+feature_list = ['Sorting 1', 'Sorting 2']
 feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
 
 fig.canvas.mpl_connect('button_press_event', play_sound)
-update_plot('Distortion')  # Start with a default feature
+update_plot('Sorting 1')  # Start with a default feature
 feature_selector.current(0)
 window.mainloop()
 
