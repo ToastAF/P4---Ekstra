@@ -20,6 +20,7 @@ pca = PCA(n_components=1)  # Using PCA to reduce the feature dimension to 1D
 
 click_history = []
 
+
 # Function to play sound at a specific position
 def play_sound(x):
     if x is not None:  # Check if x is valid (click inside the plot)
@@ -28,8 +29,10 @@ def play_sound(x):
         new_sound = generator.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
+        coords_label.config(text=f"Clicked coordinate: {x:.2f}") # Show the clicked coordinate
         sd.play(y_audio, sr_audio)
         sd.wait()
+
 
 # Function to update the plot based on the selected feature
 def update_plot(feature):
@@ -67,6 +70,7 @@ def update_plot(feature):
     ax.scatter(x_line, np.zeros_like(x_line), c=normalized_pca_values, cmap='viridis', s=40)  # Visual representation of features
     canvas.draw()
 
+
 # Set up the GUI
 window = tk.Tk()
 window.title("Sound Feature Visualization")
@@ -81,6 +85,9 @@ canvas.get_tk_widget().pack()
 
 right_frame = tk.Frame(window)
 right_frame.pack(side=tk.RIGHT, padx=10, pady=10)
+
+coords_label = tk.Label(right_frame, text="", justify='center')
+coords_label.pack()
 
 feature_list = ['Sorting 1', 'Sorting 2']
 feature_selector = ttk.Combobox(right_frame, values=feature_list)

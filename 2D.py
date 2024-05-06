@@ -25,6 +25,7 @@ pca = PCA(n_components=1)  # PCA to reduce to one principal component
 
 click_history = []
 
+
 # Function to play the sound associated with the point clicked
 def play_sound(event):
     x, y = event.xdata, event.ydata
@@ -35,21 +36,23 @@ def play_sound(event):
             y = y[0]
         x, y = float(x), float(y)
 
+        #Save where the user has clicked
         click_history.append([x, y])
+
+        #Play the sound based on the clicked coordinates
         generator.new_z[0][0], generator.new_z[0][1] = x, y
         new_sound = generator.generate_sound().squeeze().numpy()
         sf.write('temp_sound.wav', new_sound, 44100)
         y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
+        coords_label.config(text=f"Clicked coordinates: {x:.2f}, {y:.2f}")  # Show the clicked coordinate
         sd.play(y_audio, sr_audio)
         sd.wait()
-        coords_label.config(text=f"Clicked coordinates: {x:.2f}, {y:.2f}")
+
 
 # Function to update the gradient based on selected feature
 def update_plot(feature):
-    MyFeatureList = []  # Store feature data for MyFeature
-    DistortionFeatureList = []  # Store feature data for Jakob
-    FeatureList = []  # Store feature data for Bruh
-    SpectralFeatureList = []  # Store feature data for Spectral stuff
+    sorting1_list = []  # Store feature data for the sorting 1 feature
+    sorting2_list = []  # Store feature data for the sorting 2 feature
     feature_values = []
     for x, y in zip(grid_x, grid_y):
         generator.new_z[0][0], generator.new_z[0][1] = x, y
@@ -61,11 +64,11 @@ def update_plot(feature):
         temporal_centroid = np.sum(np.arange(len(envelope)) * envelope) / np.sum(envelope)
 
         if feature == 'Sorting 1':
-            DistortionFeatureList.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_flatness(y=y_audio).mean()])
-            feature_values = pca.fit_transform(DistortionFeatureList).flatten()
+            sorting1_list.append([librosa.feature.spectral_bandwidth(y=y_audio, sr=sr_audio).mean(), librosa.feature.zero_crossing_rate(y_audio).mean(), librosa.feature.spectral_flatness(y=y_audio).mean()])
+            feature_values = pca.fit_transform(sorting1_list).flatten()
         elif feature == 'Sorting 2':
-            FeatureList.append([librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean(), temporal_centroid, librosa.feature.rms(y=y_audio).mean()])
-            feature_values = pca.fit_transform(FeatureList).flatten()
+            sorting2_list.append([librosa.feature.spectral_contrast(y=y_audio, sr=sr_audio).mean(axis=1).mean(), temporal_centroid, librosa.feature.rms(y=y_audio).mean()])
+            feature_values = pca.fit_transform(sorting2_list).flatten()
         else:
             feature_values = [0]
 
@@ -74,6 +77,7 @@ def update_plot(feature):
     ax.clear()
     ax.scatter(xi, yi, c=zi, cmap='viridis', alpha=0.5)
     canvas.draw()
+
 
 # Initialize plot and GUI
 point = [float(generator.x[0]), float(generator.y[0])]
