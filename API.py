@@ -80,7 +80,6 @@ class ImpactDrums:
             z = torch.tensor(self.new_z).float()
             z_temp = z.numpy()
             z_numpy = z_temp[:, :, 0]
-            #np.savetxt('bruh.txt', z_numpy, fmt='%.5f')
             # print(z_numpy.shape)
             # print(z)
 

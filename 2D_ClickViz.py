@@ -12,7 +12,6 @@ import soundfile as sf
 from scipy.interpolate import griddata
 import API
 
-# Create an instance of ImpactDrums, which is the API, that generates sounds
 generator = API.ImpactDrums()
 
 # Initial sound generation
@@ -23,34 +22,6 @@ sf.write('Lyd 1.wav', sound, 44100)
 plot_size = 6
 pca = PCA(n_components=1)  # PCA to reduce to one principal component
 
-click_history = []
-
-
-# Function to play the sound associated with the point clicked
-def play_sound(event):
-    x, y = event.xdata, event.ydata
-    if x is not None and y is not None:
-        if isinstance(x, np.ndarray):
-            x = x[0]
-        if isinstance(y, np.ndarray):
-            y = y[0]
-        x, y = float(x), float(y)
-
-        #Save where the user has clicked7
-
-        click_history.append([x, y])
-
-        #Play the sound based on the clicked coordinates
-        generator.new_z[0][0], generator.new_z[0][1] = x, y
-        new_sound = generator.generate_sound().squeeze().numpy()
-        sf.write('temp_sound.wav', new_sound, 44100)
-        y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
-        coords_label.config(text=f"Clicked coordinates: {x:.2f}, {y:.2f}")  # Show the clicked coordinate
-        sd.play(y_audio, sr_audio)
-        sd.wait()
-
-
-# Function to update the gradient based on selected feature
 def update_plot(feature):
     sorting1_list = []  # Store feature data for the sorting 1 feature
     sorting2_list = []  # Store feature data for the sorting 2 feature
@@ -76,11 +47,48 @@ def update_plot(feature):
     normalized_values = (np.array(feature_values) - np.min(feature_values)) / (np.max(feature_values) - np.min(feature_values))
     zi = griddata((np.array(grid_x), np.array(grid_y)), normalized_values, (xi, yi), method='cubic')
     ax.clear()
-    ax.scatter(xi, yi, c=zi, cmap='viridis', alpha=0.5)
+    ax.scatter(xi, yi, c=zi, cmap='viridis', alpha=0.5, zorder=1)
+
+    x_values = [-2.99,
+-2.65,
+-0.57,
+8.11,
+-3.61,
+-4,
+-2.48,
+-3.1,
+-3.98,
+-3.03,
+7.94,
+-3.64,
+-3.06,
+-2.86,
+-3.81,
+-3.2]
+    y_values = [6.74,
+4.34,
+4.61,
+4.34,
+5.33,
+6,
+5.88,
+5.3,
+7.39,
+6.29,
+6.7,
+4.61,
+4.2,
+4.82,
+7.05,
+4.68]
+    ax.scatter(x_values, y_values, c='red', zorder=2)
+
+    x_right = -2.89
+    y_right = 5.19
+    ax.scatter(x_right, y_right, c='black', zorder=3)
+
     canvas.draw()
 
-
-# Initialize plot and GUI
 point = [float(generator.x[0]), float(generator.y[0])]
 fig, ax = plt.subplots(figsize=(5, 5))
 plt.xlim(generator.x[0] - plot_size, generator.x[0] + plot_size)
@@ -93,10 +101,9 @@ for i in range(11):
     for j in range(11):
         grid_x.append((point[0] + i * offset_increment) - offset)
         grid_y.append((point[1] + j * offset_increment) - offset)
-#xi, yi = np.meshgrid(np.linspace(min(grid_x), max(grid_x), 100), np.linspace(min(grid_y), max(grid_y), 100))
 
 
-# GUI setup
+
 window = tk.Tk()
 window.title("Generate new sound")
 plot_frame = tk.Frame(window)
@@ -115,10 +122,6 @@ feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
 
-fig.canvas.mpl_connect('button_press_event', play_sound)
 update_plot('Sorting 1')  # Start with a default feature
 feature_selector.current(0)
 window.mainloop()
-
-#Vi gemmer en fil med alle de ting som brugeren har klikket på
-np.savetxt('2D_click_history.txt', click_history, fmt='%.5f')

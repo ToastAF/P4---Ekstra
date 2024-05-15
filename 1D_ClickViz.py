@@ -19,23 +19,7 @@ generator = API.ImpactDrums()
 plot_size = 5
 pca = PCA(n_components=1)  # Using PCA to reduce the feature dimension to 1D
 
-click_history = []
 
-
-# Function to play sound at a specific position
-def play_sound(x):
-    if x is not None:  # Check if x is valid (click inside the plot)
-        generator.new_z[0][0] = x
-        click_history.append(x)
-        new_sound = generator.generate_sound().squeeze().numpy()
-        sf.write('temp_sound.wav', new_sound, 44100)
-        y_audio, sr_audio = librosa.load('temp_sound.wav', sr=None)
-        coords_label.config(text=f"Clicked coordinate: {x:.2f}") # Show the clicked coordinate
-        sd.play(y_audio, sr_audio)
-        sd.wait()
-
-
-# Function to update the plot based on the selected feature
 def update_plot(feature):
     x_line = np.linspace(-plot_size, plot_size, 100)
     feature_values = []
@@ -70,11 +54,32 @@ def update_plot(feature):
 
     # Update the plot
     ax.clear()
-    ax.scatter(x_line, np.zeros_like(x_line), c=normalized_pca_values, cmap='viridis', s=40)  # Visual representation of features
+    ax.scatter(x_line, np.zeros_like(x_line), c=normalized_pca_values, cmap='viridis', s=40, zorder=1)  # Visual representation of features
+
+    x_values = [-5,
+-4.59,
+-4.46,
+-3.4,
+-4.91,
+-5,
+-4.95,
+-4.02,
+-4.79,
+-4.18,
+4.96,
+-5,
+-4.56,
+4.29,
+-5.05,
+-5]
+    ax.scatter(x_values, np.zeros_like(x_values), c='red', zorder=2)
+
+    x_right = 4.93
+    ax.scatter(x_right, 0, c='pink', zorder=3)
+
     canvas.draw()
 
 
-# Set up the GUI
 window = tk.Tk()
 window.title("Sound Feature Visualization")
 
@@ -97,11 +102,7 @@ feature_selector = ttk.Combobox(right_frame, values=feature_list)
 feature_selector.pack()
 feature_selector.bind("<<ComboboxSelected>>", lambda event: update_plot(feature_selector.get()))
 
-fig.canvas.mpl_connect('button_press_event', lambda event: play_sound(event.xdata))
-
 update_plot('Sorting 1')  # Initialize with a default feature for visualization
 feature_selector.current(0)
 
 window.mainloop()
-
-np.savetxt('1D_click_history.txt', click_history, fmt='%.5f')
